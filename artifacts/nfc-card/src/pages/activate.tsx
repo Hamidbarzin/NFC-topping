@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { CreditCard, DollarSign, Zap } from "lucide-react";
+import logo from "/topping-courier-logo.png";
 
 const activateSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -79,11 +80,8 @@ export default function Activate() {
 
   return (
     <div className="min-h-[100dvh] bg-gray-50 flex flex-col">
-      <header className="px-6 py-4 border-b bg-white flex items-center gap-3">
-        <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-          <Zap className="w-4 h-4 text-white" />
-        </div>
-        <span className="font-bold text-lg tracking-tight">Topping Courier</span>
+      <header className="px-6 py-3 border-b bg-white flex items-center">
+        <img src={logo} alt="Topping Courier" className="h-12 w-auto" />
       </header>
 
       <div className="flex-1 flex items-center justify-center p-4">

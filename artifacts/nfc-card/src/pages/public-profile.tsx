@@ -2,6 +2,7 @@ import { useParams } from "wouter";
 import { useGetPublicProfile, getGetPublicProfileQueryKey } from "@workspace/api-client-react";
 import { Spinner } from "@/components/ui/spinner";
 import { Phone, Mail, Globe, Instagram, MessageCircle, User } from "lucide-react";
+import logo from "/topping-courier-logo.png";
 import { Button } from "@/components/ui/button";
 
 export default function PublicProfile() {
@@ -120,9 +121,9 @@ export default function PublicProfile() {
             </div>
           </div>
 
-          <p className="text-center text-gray-400 text-xs mt-6" data-testid="text-powered-by">
-            Powered by Topping Courier
-          </p>
+          <div className="flex justify-center mt-6" data-testid="text-powered-by">
+            <img src={logo} alt="Topping Courier" className="h-8 w-auto opacity-60" />
+          </div>
         </div>
       </div>
     </div>

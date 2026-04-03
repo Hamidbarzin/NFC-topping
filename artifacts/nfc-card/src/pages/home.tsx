@@ -1,12 +1,13 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { CreditCard, Zap, Share2 } from "lucide-react";
+import logo from "/topping-courier-logo.png";
 
 export default function Home() {
   return (
     <div className="min-h-[100dvh] flex flex-col bg-white">
       <header className="px-6 py-4 flex justify-between items-center border-b">
-        <div className="font-bold text-xl tracking-tight">Topping Courier</div>
+        <img src={logo} alt="Topping Courier" className="h-12 w-auto" />
         <Link href="/login">
           <Button variant="outline" size="sm">Sign In</Button>
         </Link>
@@ -61,8 +62,8 @@ export default function Home() {
         </div>
       </main>
       
-      <footer className="border-t py-8 text-center text-gray-500 text-sm">
-        Powered by Topping Courier
+      <footer className="border-t py-8 flex justify-center items-center">
+        <img src={logo} alt="Topping Courier" className="h-8 w-auto opacity-70" />
       </footer>
     </div>
   );

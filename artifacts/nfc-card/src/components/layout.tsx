@@ -3,6 +3,7 @@ import { useGetMe, useLogout } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { LogOut, User as UserIcon, LayoutDashboard, Settings, ShieldAlert } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import logo from "/topping-courier-logo.png";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { data: user } = useGetMe();
@@ -23,7 +24,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <div className="min-h-[100dvh] flex flex-col bg-gray-50">
       <header className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="font-bold text-xl tracking-tight">Topping Courier</div>
+          <img src={logo} alt="Topping Courier" className="h-11 w-auto" />
           
           <nav className="flex items-center gap-4">
             <Link href="/dashboard" className="text-sm font-medium hover:text-gray-600 transition-colors flex items-center gap-1">
@@ -55,8 +56,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         {children}
       </main>
       
-      <footer className="bg-white border-t py-6 text-center text-sm text-gray-500">
-        Powered by Topping Courier
+      <footer className="bg-white border-t py-6 flex justify-center items-center">
+        <img src={logo} alt="Topping Courier" className="h-7 w-auto opacity-70" />
       </footer>
     </div>
   );
