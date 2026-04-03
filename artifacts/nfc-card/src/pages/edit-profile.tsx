@@ -16,11 +16,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { phoneFieldSchema } from "@/lib/phone-schema";
 
 const editProfileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   businessName: z.string().min(2, "Business name must be at least 2 characters"),
-  phone: z.string().min(7, "Please enter a valid phone"),
+  phone: phoneFieldSchema,
   website: z.string().url("Please enter a valid URL").or(z.literal("")).optional(),
   instagram: z.string().optional(),
   whatsapp: z.string().optional(),
@@ -154,7 +155,14 @@ export default function EditProfile() {
                 <FormItem>
                   <FormLabel>Phone Number</FormLabel>
                   <FormControl>
-                    <Input placeholder="+1 234 567 8900" data-testid="input-phone" {...field} />
+                    <Input
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      placeholder="+1 234 567 8900"
+                      data-testid="input-phone"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

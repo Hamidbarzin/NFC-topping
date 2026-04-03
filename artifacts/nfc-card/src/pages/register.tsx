@@ -10,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import { CreditCard, ArrowRight, CheckCircle2 } from "lucide-react";
 import logo from "/topping-courier-logo.png";
+import { isLoginEnabled } from "@/config";
+import { phoneFieldSchema } from "@/lib/phone-schema";
 
 const cardCodeSchema = z.object({
   cardCode: z.string().min(1, "Please enter your card code"),
@@ -18,7 +20,7 @@ const cardCodeSchema = z.object({
 const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   businessName: z.string().min(2, "Business name must be at least 2 characters"),
-  phone: z.string().min(7, "Please enter a valid phone number"),
+  phone: phoneFieldSchema,
   email: z.string().email("Please enter a valid email"),
   username: z
     .string()
@@ -106,14 +108,16 @@ export default function Register() {
         <Link href="/">
           <img src={logo} alt="Topping Courier" className="h-16 w-auto cursor-pointer" />
         </Link>
-        <Link href="/login">
-          <button
-            className="text-sm font-semibold px-4 py-2 rounded-lg transition-all hover:opacity-90"
-            style={{ color: "#F5A500", border: "1px solid #F5A500", background: "transparent" }}
-          >
-            Sign In
-          </button>
-        </Link>
+        {isLoginEnabled() && (
+          <Link href="/login">
+            <button
+              className="text-sm font-semibold px-4 py-2 rounded-lg transition-all hover:opacity-90"
+              style={{ color: "#F5A500", border: "1px solid #F5A500", background: "transparent" }}
+            >
+              Sign In
+            </button>
+          </Link>
+        )}
       </header>
 
       <div className="flex-1 flex flex-col items-center justify-start py-10 px-4">
@@ -206,8 +210,17 @@ export default function Register() {
 
               {cardCode && cardStatus === "active" && (
                 <div className="mt-3 p-3 rounded-lg border text-sm" style={{ background: "#fff8e1", borderColor: "#F5A500", color: "#92400e" }}>
-                  This card is already activated.{" "}
-                  <Link href="/login" className="font-bold underline">Sign in instead</Link>
+                  This card is already activated.
+                  {isLoginEnabled() ? (
+                    <>
+                      {" "}
+                      <Link href="/login" className="font-bold underline">
+                        Sign in instead
+                      </Link>
+                    </>
+                  ) : (
+                    " Open this app on the device where you signed up, or use a new card."
+                  )}
                 </div>
               )}
               {cardCode && cardStatus === "not_found" && !cardLoading && (
@@ -277,7 +290,15 @@ export default function Register() {
                           <FormItem>
                             <FormLabel style={{ color: "#1A2D7C" }} className="font-semibold">Phone Number</FormLabel>
                             <FormControl>
-                              <Input placeholder="+1 647 339 0222" className="h-11" data-testid="input-phone" {...field} />
+                              <Input
+                                type="tel"
+                                inputMode="tel"
+                                autoComplete="tel"
+                                placeholder="+1 647 339 0222"
+                                className="h-11"
+                                data-testid="input-phone"
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -354,12 +375,14 @@ export default function Register() {
                       {activateCard.isPending ? "Creating Account..." : "Create Account & Claim $40 Credit"}
                     </button>
 
-                    <p className="text-center text-gray-400 text-xs">
-                      Already have an account?{" "}
-                      <Link href="/login" className="font-semibold" style={{ color: "#F5A500" }}>
-                        Sign in
-                      </Link>
-                    </p>
+                    {isLoginEnabled() && (
+                      <p className="text-center text-gray-400 text-xs">
+                        Already have an account?{" "}
+                        <Link href="/login" className="font-semibold" style={{ color: "#F5A500" }}>
+                          Sign in
+                        </Link>
+                      </p>
+                    )}
                   </form>
                 </Form>
               </div>

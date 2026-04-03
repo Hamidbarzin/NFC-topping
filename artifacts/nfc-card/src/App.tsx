@@ -1,4 +1,4 @@
-import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
+import { Switch, Route, Router as WouterRouter, useLocation, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +15,7 @@ import EditProfile from "./pages/edit-profile";
 import Login from "./pages/login";
 import Admin from "./pages/admin";
 import Layout from "./components/layout";
+import { isLoginEnabled } from "./config";
 
 setAuthTokenGetter(() => localStorage.getItem("nfc_token"));
 
@@ -26,7 +27,7 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
   const token = localStorage.getItem("nfc_token");
 
   if (!token) {
-    setLocation("/login");
+    setLocation(isLoginEnabled() ? "/login" : "/");
     return null;
   }
 
@@ -44,7 +45,7 @@ function Router() {
       <Route path="/card/:code" component={CardScan} />
       <Route path="/activate/:code" component={Activate} />
       <Route path="/u/:username" component={PublicProfile} />
-      <Route path="/login" component={Login} />
+      <Route path="/login">{() => (isLoginEnabled() ? <Login /> : <Redirect to="/" />)}</Route>
       <Route path="/register" component={Register} />
       
       {/* Protected Routes */}

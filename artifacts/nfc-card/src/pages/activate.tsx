@@ -8,11 +8,13 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { CreditCard, DollarSign } from "lucide-react";
 import logo from "/topping-courier-logo.png";
+import { isLoginEnabled } from "@/config";
+import { phoneFieldSchema } from "@/lib/phone-schema";
 
 const activateSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   businessName: z.string().min(2, "Business name must be at least 2 characters"),
-  phone: z.string().min(7, "Please enter a valid phone number"),
+  phone: phoneFieldSchema,
   email: z.string().email("Please enter a valid email"),
   username: z.string().min(3, "Username must be at least 3 characters").regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores"),
   password: z.string().min(6, "Password must be at least 6 characters"),
@@ -57,13 +59,17 @@ export default function Activate() {
               <CreditCard className="w-7 h-7" style={{ color: "#F5A500" }} />
             </div>
             <h1 className="text-2xl font-extrabold mb-2" style={{ color: "#1A2D7C" }}>Card Already Activated</h1>
-            <p className="text-gray-500 mb-6">This card has already been registered. Log in to access your account.</p>
+            <p className="text-gray-500 mb-6">
+              {isLoginEnabled()
+                ? "This card has already been registered. Log in to access your account."
+                : "This card has already been registered. Use the same device where you activated the card, or register with a new card code."}
+            </p>
             <button
-              onClick={() => setLocation("/login")}
+              onClick={() => setLocation(isLoginEnabled() ? "/login" : "/")}
               className="w-full h-12 rounded-lg font-bold text-base transition-all hover:opacity-90"
               style={{ background: "#F5A500", color: "#fff" }}
             >
-              Log In
+              {isLoginEnabled() ? "Log In" : "Back to home"}
             </button>
           </div>
         </div>
@@ -152,7 +158,15 @@ export default function Activate() {
                     <FormItem>
                       <FormLabel style={{ color: "#1A2D7C" }} className="font-semibold">Phone Number</FormLabel>
                       <FormControl>
-                        <Input placeholder="+1 234 567 8900" data-testid="input-phone" className="h-11" {...field} />
+                        <Input
+                          type="tel"
+                          inputMode="tel"
+                          autoComplete="tel"
+                          placeholder="+1 234 567 8900"
+                          data-testid="input-phone"
+                          className="h-11"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

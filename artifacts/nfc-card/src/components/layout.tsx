@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { LogOut, LayoutDashboard, Settings, ShieldAlert } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import logo from "/topping-courier-logo.png";
+import { isLoginEnabled } from "@/config";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { data: user } = useGetMe();
@@ -15,7 +16,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       onSuccess: () => {
         localStorage.removeItem("nfc_token");
         queryClient.clear();
-        window.location.href = "/login";
+        window.location.href = isLoginEnabled() ? "/login" : "/";
       },
     });
   };

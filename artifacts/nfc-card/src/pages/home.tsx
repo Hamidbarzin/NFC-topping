@@ -2,17 +2,20 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { CreditCard, Zap, Share2, Truck, Clock, Shield } from "lucide-react";
 import logo from "/topping-courier-logo.png";
+import { isLoginEnabled } from "@/config";
 
 export default function Home() {
   return (
     <div className="min-h-[100dvh] flex flex-col" style={{ background: "#f8f9fc" }}>
       <header style={{ background: "#1A2D7C" }} className="px-6 py-3 flex justify-between items-center shadow-lg">
         <img src={logo} alt="Topping Courier" className="h-16 w-auto" />
-        <Link href="/login">
-          <Button size="sm" style={{ background: "#F5A500", color: "#fff", border: "none" }} className="font-semibold hover:opacity-90">
-            Sign In
-          </Button>
-        </Link>
+        {isLoginEnabled() && (
+          <Link href="/login">
+            <Button size="sm" style={{ background: "#F5A500", color: "#fff", border: "none" }} className="font-semibold hover:opacity-90">
+              Sign In
+            </Button>
+          </Link>
+        )}
       </header>
 
       <div style={{ background: "linear-gradient(135deg, #111E52 0%, #1A2D7C 60%, #22389E 100%)" }} className="py-20 px-6 text-center text-white">
@@ -35,7 +38,7 @@ export default function Home() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
-            <Link href="/register" className="flex-1">
+            <Link href="/register" className={isLoginEnabled() ? "flex-1" : "w-full max-w-xs mx-auto"}>
               <button
                 className="w-full h-12 rounded-lg font-bold text-base transition-all hover:opacity-90 shadow-lg"
                 style={{ background: "#F5A500", color: "#fff" }}
@@ -43,14 +46,16 @@ export default function Home() {
                 Register Now
               </button>
             </Link>
-            <Link href="/login" className="flex-1">
-              <button
-                className="w-full h-12 rounded-lg font-bold text-base transition-all hover:bg-white hover:text-[#1A2D7C]"
-                style={{ border: "2px solid rgba(255,255,255,0.5)", color: "#fff", background: "transparent" }}
-              >
-                Login to Dashboard
-              </button>
-            </Link>
+            {isLoginEnabled() && (
+              <Link href="/login" className="flex-1">
+                <button
+                  className="w-full h-12 rounded-lg font-bold text-base transition-all hover:bg-white hover:text-[#1A2D7C]"
+                  style={{ border: "2px solid rgba(255,255,255,0.5)", color: "#fff", background: "transparent" }}
+                >
+                  Login to Dashboard
+                </button>
+              </Link>
+            )}
           </div>
         </div>
       </div>
