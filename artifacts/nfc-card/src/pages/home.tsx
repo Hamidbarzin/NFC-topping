@@ -35,13 +35,14 @@ export default function Home() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
-            <button
-              onClick={() => alert("Tap your NFC card on your phone to begin activation.")}
-              className="flex-1 h-12 rounded-lg font-bold text-base transition-all hover:opacity-90 shadow-lg"
-              style={{ background: "#F5A500", color: "#fff" }}
-            >
-              Tap Card to Activate
-            </button>
+            <Link href="/register" className="flex-1">
+              <button
+                className="w-full h-12 rounded-lg font-bold text-base transition-all hover:opacity-90 shadow-lg"
+                style={{ background: "#F5A500", color: "#fff" }}
+              >
+                Register Now
+              </button>
+            </Link>
             <Link href="/login" className="flex-1">
               <button
                 className="w-full h-12 rounded-lg font-bold text-base transition-all hover:bg-white hover:text-[#1A2D7C]"
@@ -86,13 +87,14 @@ export default function Home() {
       <div style={{ background: "#1A2D7C" }} className="py-14 px-6 text-center text-white">
         <h2 className="text-2xl font-extrabold mb-2">Includes <span style={{ color: "#F5A500" }}>$40 Credit</span></h2>
         <p style={{ color: "rgba(255,255,255,0.7)" }} className="mb-6 text-sm">Every card activation comes with $40 Topping Courier credit to get you started.</p>
-        <button
-          onClick={() => alert("Tap your NFC card on your phone to begin activation.")}
-          className="px-8 h-12 rounded-lg font-bold text-base transition-all hover:opacity-90"
-          style={{ background: "#F5A500", color: "#fff" }}
-        >
-          Activate Your Card
-        </button>
+        <Link href="/register">
+          <button
+            className="px-8 h-12 rounded-lg font-bold text-base transition-all hover:opacity-90"
+            style={{ background: "#F5A500", color: "#fff" }}
+          >
+            Activate Your Card
+          </button>
+        </Link>
       </div>
 
       <footer style={{ background: "#111E52" }} className="py-8 flex flex-col items-center gap-3">

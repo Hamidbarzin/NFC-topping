@@ -8,6 +8,7 @@ import { setAuthTokenGetter } from "@workspace/api-client-react";
 import Home from "./pages/home";
 import CardScan from "./pages/card-scan";
 import Activate from "./pages/activate";
+import Register from "./pages/register";
 import PublicProfile from "./pages/public-profile";
 import Dashboard from "./pages/dashboard";
 import EditProfile from "./pages/edit-profile";
@@ -44,6 +45,7 @@ function Router() {
       <Route path="/activate/:code" component={Activate} />
       <Route path="/u/:username" component={PublicProfile} />
       <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
       
       {/* Protected Routes */}
       <Route path="/dashboard"><ProtectedRoute component={Dashboard} /></Route>
