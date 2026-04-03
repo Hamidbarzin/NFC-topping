@@ -44,7 +44,7 @@ export default function Login() {
   return (
     <div className="min-h-[100dvh] flex flex-col" style={{ background: "#f0f2f8" }}>
       <header style={{ background: "#1A2D7C" }} className="px-6 py-3 flex items-center justify-center shadow-lg">
-        <img src={logo} alt="Topping Courier" className="h-12 w-auto" />
+        <img src={logo} alt="Topping Courier" className="h-16 w-auto" />
       </header>
 
       <div className="flex-1 flex flex-col items-center justify-center p-4">

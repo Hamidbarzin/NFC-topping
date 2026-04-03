@@ -49,7 +49,7 @@ export default function Activate() {
     return (
       <div className="min-h-[100dvh] flex flex-col" style={{ background: "#f0f2f8" }}>
         <header style={{ background: "#1A2D7C" }} className="px-6 py-3 flex items-center shadow-lg">
-          <img src={logo} alt="Topping Courier" className="h-12 w-auto" />
+          <img src={logo} alt="Topping Courier" className="h-16 w-auto" />
         </header>
         <div className="flex-1 flex items-center justify-center p-6">
           <div className="max-w-md w-full bg-white rounded-2xl p-8 text-center shadow-sm border border-gray-100">
@@ -91,7 +91,7 @@ export default function Activate() {
   return (
     <div className="min-h-[100dvh] flex flex-col" style={{ background: "#f0f2f8" }}>
       <header style={{ background: "#1A2D7C" }} className="px-6 py-3 flex items-center shadow-lg">
-        <img src={logo} alt="Topping Courier" className="h-12 w-auto" />
+        <img src={logo} alt="Topping Courier" className="h-16 w-auto" />
       </header>
 
       <div className="flex-1 flex items-center justify-center p-4 py-8">

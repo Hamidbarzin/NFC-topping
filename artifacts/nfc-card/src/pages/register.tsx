@@ -104,7 +104,7 @@ export default function Register() {
     <div className="min-h-[100dvh] flex flex-col" style={{ background: "#f0f2f8" }}>
       <header style={{ background: "#1A2D7C" }} className="px-6 py-3 flex items-center justify-between shadow-lg">
         <Link href="/">
-          <img src={logo} alt="Topping Courier" className="h-12 w-auto cursor-pointer" />
+          <img src={logo} alt="Topping Courier" className="h-16 w-auto cursor-pointer" />
         </Link>
         <Link href="/login">
           <button
@@ -369,7 +369,7 @@ export default function Register() {
       </div>
 
       <footer style={{ background: "#111E52" }} className="py-5 flex flex-col items-center gap-2">
-        <img src={logo} alt="Topping Courier" className="h-8 w-auto opacity-90" />
+        <img src={logo} alt="Topping Courier" className="h-12 w-auto opacity-90" />
         <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>© {new Date().getFullYear()} Topping Courier. All rights reserved.</p>
       </footer>
     </div>

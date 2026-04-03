@@ -24,7 +24,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <div className="min-h-[100dvh] flex flex-col" style={{ background: "#f0f2f8" }}>
       <header style={{ background: "#1A2D7C" }} className="sticky top-0 z-10 shadow-lg">
         <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-          <img src={logo} alt="Topping Courier" className="h-11 w-auto" />
+          <img src={logo} alt="Topping Courier" className="h-16 w-auto" />
 
           <nav className="flex items-center gap-1">
             <Link href="/dashboard">
@@ -67,7 +67,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </main>
 
       <footer style={{ background: "#111E52" }} className="py-6 flex flex-col items-center gap-2">
-        <img src={logo} alt="Topping Courier" className="h-8 w-auto opacity-90" />
+        <img src={logo} alt="Topping Courier" className="h-12 w-auto opacity-90" />
         <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>© {new Date().getFullYear()} Topping Courier</p>
       </footer>
     </div>

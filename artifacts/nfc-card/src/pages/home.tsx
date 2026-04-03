@@ -7,7 +7,7 @@ export default function Home() {
   return (
     <div className="min-h-[100dvh] flex flex-col" style={{ background: "#f8f9fc" }}>
       <header style={{ background: "#1A2D7C" }} className="px-6 py-3 flex justify-between items-center shadow-lg">
-        <img src={logo} alt="Topping Courier" className="h-12 w-auto" />
+        <img src={logo} alt="Topping Courier" className="h-16 w-auto" />
         <Link href="/login">
           <Button size="sm" style={{ background: "#F5A500", color: "#fff", border: "none" }} className="font-semibold hover:opacity-90">
             Sign In
@@ -98,7 +98,7 @@ export default function Home() {
       </div>
 
       <footer style={{ background: "#111E52" }} className="py-8 flex flex-col items-center gap-3">
-        <img src={logo} alt="Topping Courier" className="h-10 w-auto opacity-90" />
+        <img src={logo} alt="Topping Courier" className="h-12 w-auto opacity-90" />
         <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>© {new Date().getFullYear()} Topping Courier. All rights reserved.</p>
       </footer>
     </div>

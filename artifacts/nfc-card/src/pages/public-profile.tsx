@@ -145,7 +145,7 @@ export default function PublicProfile() {
           </div>
 
           <div className="flex justify-center mt-6" data-testid="text-powered-by">
-            <img src={logo} alt="Topping Courier" className="h-8 w-auto opacity-70" />
+            <img src={logo} alt="Topping Courier" className="h-11 w-auto opacity-70" />
           </div>
         </div>
       </div>
