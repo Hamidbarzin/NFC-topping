@@ -3,20 +3,30 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Smart NFC Digital Card System API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: cards
+    description: NFC card operations
+  - name: users
+    description: User operations
+  - name: profiles
+    description: Profile operations
+  - name: credits
+    description: Credit operations
+  - name: admin
+    description: Admin operations
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +34,290 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /cards/{code}:
+    get:
+      operationId: getCard
+      tags: [cards]
+      summary: Get card by code
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Card info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Card"
+        "404":
+          description: Card not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /cards/{code}/activate:
+    post:
+      operationId: activateCard
+      tags: [cards]
+      summary: Activate a new card and create user
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActivateCardBody"
+      responses:
+        "201":
+          description: Card activated, user created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Validation error or card already active
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [users]
+      summary: Login with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginBody"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [users]
+      summary: Get current authenticated user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserWithProfile"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [users]
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /users/{username}:
+    get:
+      operationId: getPublicProfile
+      tags: [profiles]
+      summary: Get public profile by username
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Public profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicProfile"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /profile:
+    get:
+      operationId: getProfile
+      tags: [profiles]
+      summary: Get current user's profile
+      responses:
+        "200":
+          description: Profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateProfile
+      tags: [profiles]
+      summary: Update current user's profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProfileBody"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /credits:
+    get:
+      operationId: getCredits
+      tags: [credits]
+      summary: Get current user's credit balance
+      responses:
+        "200":
+          description: Credits
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Credits"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/users:
+    get:
+      operationId: adminListUsers
+      tags: [admin]
+      summary: Admin - list all users
+      responses:
+        "200":
+          description: All users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminUser"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/cards:
+    get:
+      operationId: adminListCards
+      tags: [admin]
+      summary: Admin - list all cards
+      responses:
+        "200":
+          description: All cards
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Card"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: adminCreateCard
+      tags: [admin]
+      summary: Admin - create a new card
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCardBody"
+      responses:
+        "201":
+          description: Card created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Card"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/stats:
+    get:
+      operationId: adminGetStats
+      tags: [admin]
+      summary: Admin - dashboard stats
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStats"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +328,315 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required:
+        - success
+
+    Card:
+      type: object
+      properties:
+        id:
+          type: integer
+        cardCode:
+          type: string
+        status:
+          type: string
+          enum: [new, active]
+        userId:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+      required:
+        - id
+        - cardCode
+        - status
+        - userId
+        - createdAt
+
+    ActivateCardBody:
+      type: object
+      properties:
+        name:
+          type: string
+        businessName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        username:
+          type: string
+      required:
+        - name
+        - businessName
+        - phone
+        - email
+        - password
+        - username
+
+    LoginBody:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
+
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/UserWithProfile"
+        token:
+          type: string
+      required:
+        - user
+        - token
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        businessName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        username:
+          type: string
+        isAdmin:
+          type: boolean
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - businessName
+        - phone
+        - email
+        - username
+        - isAdmin
+        - createdAt
+
+    Profile:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        website:
+          type: ["string", "null"]
+        instagram:
+          type: ["string", "null"]
+        whatsapp:
+          type: ["string", "null"]
+        bio:
+          type: ["string", "null"]
+        logo:
+          type: ["string", "null"]
+        updatedAt:
+          type: string
+      required:
+        - id
+        - userId
+        - website
+        - instagram
+        - whatsapp
+        - bio
+        - logo
+        - updatedAt
+
+    UserWithProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        businessName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        username:
+          type: string
+        isAdmin:
+          type: boolean
+        createdAt:
+          type: string
+        profile:
+          $ref: "#/components/schemas/Profile"
+        credits:
+          $ref: "#/components/schemas/Credits"
+      required:
+        - id
+        - name
+        - businessName
+        - phone
+        - email
+        - username
+        - isAdmin
+        - createdAt
+        - profile
+        - credits
+
+    PublicProfile:
+      type: object
+      properties:
+        name:
+          type: string
+        businessName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        username:
+          type: string
+        website:
+          type: ["string", "null"]
+        instagram:
+          type: ["string", "null"]
+        whatsapp:
+          type: ["string", "null"]
+        bio:
+          type: ["string", "null"]
+        logo:
+          type: ["string", "null"]
+      required:
+        - name
+        - businessName
+        - phone
+        - email
+        - username
+        - website
+        - instagram
+        - whatsapp
+        - bio
+        - logo
+
+    Credits:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        total:
+          type: integer
+        used:
+          type: integer
+        available:
+          type: integer
+      required:
+        - id
+        - userId
+        - total
+        - used
+        - available
+
+    UpdateProfileBody:
+      type: object
+      properties:
+        name:
+          type: string
+        businessName:
+          type: string
+        phone:
+          type: string
+        website:
+          type: ["string", "null"]
+        instagram:
+          type: ["string", "null"]
+        whatsapp:
+          type: ["string", "null"]
+        bio:
+          type: ["string", "null"]
+        logo:
+          type: ["string", "null"]
+
+    AdminUser:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        businessName:
+          type: string
+        email:
+          type: string
+        username:
+          type: string
+        phone:
+          type: string
+        isAdmin:
+          type: boolean
+        createdAt:
+          type: string
+        totalCredit:
+          type: integer
+        usedCredit:
+          type: integer
+      required:
+        - id
+        - name
+        - businessName
+        - email
+        - username
+        - phone
+        - isAdmin
+        - createdAt
+        - totalCredit
+        - usedCredit
+
+    AdminStats:
+      type: object
+      properties:
+        totalUsers:
+          type: integer
+        totalCards:
+          type: integer
+        activeCards:
+          type: integer
+        newCards:
+          type: integer
+        totalCreditsIssued:
+          type: integer
+      required:
+        - totalUsers
+        - totalCards
+        - activeCards
+        - newCards
+        - totalCreditsIssued
+
+    CreateCardBody:
+      type: object
+      properties:
+        cardCode:
+          type: string
+      required:
+        - cardCode
