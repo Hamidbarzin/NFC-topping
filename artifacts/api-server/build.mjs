@@ -1,4 +1,6 @@
 import { createRequire } from "node:module";
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { build as esbuild } from "esbuild";
@@ -9,8 +11,40 @@ import { rm } from "node:fs/promises";
 globalThis.require = createRequire(import.meta.url);
 
 const artifactDir = path.dirname(fileURLToPath(import.meta.url));
+const serverOnly = process.argv.includes("--server-only");
+
+/**
+ * Production serves `artifacts/topping-nfc/dist/public`. Some hosts only run
+ * `node build.mjs` (not `pnpm --filter topping-nfc build`), so we always run
+ * Vite here unless `--server-only` (used by api-server dev for fast restarts).
+ */
+function runToppingNfcViteBuild() {
+  const toppingNfcRoot = path.resolve(artifactDir, "..", "topping-nfc");
+  const viteEntry = path.join(toppingNfcRoot, "node_modules", "vite", "bin", "vite.js");
+  if (!fs.existsSync(viteEntry)) {
+    console.error(
+      "[build] Missing Vite at",
+      viteEntry,
+      "— run `pnpm install` from the monorepo root.",
+    );
+    process.exit(1);
+  }
+  console.info("[build] Vite: topping-nfc → dist/public …");
+  const r = spawnSync(process.execPath, [viteEntry, "build", "--config", "vite.config.ts"], {
+    cwd: toppingNfcRoot,
+    stdio: "inherit",
+    env: process.env,
+  });
+  if (r.status !== 0) {
+    process.exit(r.status ?? 1);
+  }
+}
 
 async function buildAll() {
+  if (!serverOnly) {
+    runToppingNfcViteBuild();
+  }
+
   const distDir = path.resolve(artifactDir, "dist");
   await rm(distDir, { recursive: true, force: true });
 
@@ -20,7 +54,7 @@ async function buildAll() {
     bundle: true,
     format: "esm",
     outdir: distDir,
-    outExtension: { ".js": ".mjs" },
+    outExtension: { ".js": ".js" },
     logLevel: "info",
     // Some packages may not be bundleable, so we externalize them, we can add more here as needed.
     // Some of the packages below may not be imported or installed, but we're adding them in case they are in the future.
@@ -47,6 +81,8 @@ async function buildAll() {
       "isolated-vm",
       "lightningcss",
       "pg-native",
+      "pg",
+      "pg-types",
       "oracledb",
       "mongodb-client-encryption",
       "nodemailer",

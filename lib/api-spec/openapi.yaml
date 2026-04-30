@@ -1,25 +1,20 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: Smart NFC Digital Card System API
+  description: Topping NFC API — NFC business card management platform
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
-  - name: cards
-    description: NFC card operations
-  - name: users
-    description: User operations
   - name: profiles
-    description: Profile operations
-  - name: credits
-    description: Credit operations
+    description: NFC card profile management
+  - name: analytics
+    description: Tap analytics
   - name: admin
-    description: Admin operations
+    description: Admin-only operations
 
 paths:
   /healthz:
@@ -27,6 +22,7 @@ paths:
       operationId: healthCheck
       tags: [health]
       summary: Health check
+      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -35,166 +31,105 @@ paths:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
 
-  /cards/{code}:
+  /profiles:
     get:
-      operationId: getCard
-      tags: [cards]
-      summary: Get card by code
+      operationId: listProfiles
+      tags: [profiles]
+      summary: List all profiles (admin)
       parameters:
-        - name: code
-          in: path
-          required: true
+        - name: search
+          in: query
           schema:
             type: string
+        - name: plan
+          in: query
+          schema:
+            type: string
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
       responses:
         "200":
-          description: Card info
+          description: List of profiles
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Card"
-        "404":
-          description: Card not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-  /cards/{code}/activate:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Profile"
     post:
-      operationId: activateCard
-      tags: [cards]
-      summary: Activate a new card and create user
-      parameters:
-        - name: code
-          in: path
-          required: true
-          schema:
-            type: string
+      operationId: createProfile
+      tags: [profiles]
+      summary: Create a new NFC card profile (admin)
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ActivateCardBody"
+              $ref: "#/components/schemas/CreateProfileBody"
       responses:
         "201":
-          description: Card activated, user created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AuthResponse"
-        "400":
-          description: Validation error or card already active
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-  /auth/login:
-    post:
-      operationId: login
-      tags: [users]
-      summary: Login with email and password
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/LoginBody"
-      responses:
-        "200":
-          description: Logged in
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AuthResponse"
-        "401":
-          description: Invalid credentials
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-  /auth/me:
-    get:
-      operationId: getMe
-      tags: [users]
-      summary: Get current authenticated user
-      responses:
-        "200":
-          description: Current user
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserWithProfile"
-        "401":
-          description: Not authenticated
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-  /auth/logout:
-    post:
-      operationId: logout
-      tags: [users]
-      summary: Logout
-      responses:
-        "200":
-          description: Logged out
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SuccessResponse"
-
-  /users/{username}:
-    get:
-      operationId: getPublicProfile
-      tags: [profiles]
-      summary: Get public profile by username
-      parameters:
-        - name: username
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Public profile
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PublicProfile"
-        "404":
-          description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-  /profile:
-    get:
-      operationId: getProfile
-      tags: [profiles]
-      summary: Get current user's profile
-      responses:
-        "200":
-          description: Profile
+          description: Profile created
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Profile"
-        "401":
-          description: Unauthorized
+        "400":
+          description: Bad request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Slug already taken
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /profiles/{slug}:
+    get:
+      operationId: getProfileBySlug
+      tags: [profiles]
+      summary: Get a profile by slug (public — used for NFC tap landing page)
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Profile found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        "404":
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Card inactive or expired
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /profiles/{id}:
     patch:
       operationId: updateProfile
       tags: [profiles]
-      summary: Update current user's profile
+      summary: Update a profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
       requestBody:
         required: true
         content:
@@ -203,97 +138,180 @@ paths:
               $ref: "#/components/schemas/UpdateProfileBody"
       responses:
         "200":
-          description: Updated profile
+          description: Profile updated
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Profile"
-        "401":
-          description: Unauthorized
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteProfile
+      tags: [profiles]
+      summary: Delete a profile (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Profile deleted
+        "404":
+          description: Profile not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /credits:
-    get:
-      operationId: getCredits
-      tags: [credits]
-      summary: Get current user's credit balance
+  /profiles/{id}/toggle-active:
+    patch:
+      operationId: toggleProfileActive
+      tags: [profiles]
+      summary: Toggle a profile active/inactive (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
       responses:
         "200":
-          description: Credits
+          description: Profile updated
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Credits"
-        "401":
-          description: Unauthorized
+                $ref: "#/components/schemas/Profile"
+        "404":
+          description: Profile not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /admin/users:
-    get:
-      operationId: adminListUsers
-      tags: [admin]
-      summary: Admin - list all users
-      responses:
-        "200":
-          description: All users
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/AdminUser"
-        "403":
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-  /admin/cards:
-    get:
-      operationId: adminListCards
-      tags: [admin]
-      summary: Admin - list all cards
-      responses:
-        "200":
-          description: All cards
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Card"
-        "403":
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+  /profiles/{slug}/tap:
     post:
-      operationId: adminCreateCard
-      tags: [admin]
-      summary: Admin - create a new card
+      operationId: recordTap
+      tags: [analytics]
+      summary: Record an NFC card tap event
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "201":
+          description: Tap recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TapEvent"
+        "404":
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /profiles/{id}/analytics:
+    get:
+      operationId: getProfileAnalytics
+      tags: [analytics]
+      summary: Get tap analytics for a specific profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: days
+          in: query
+          schema:
+            type: integer
+            default: 30
+      responses:
+        "200":
+          description: Analytics data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileAnalytics"
+        "404":
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /profiles/{id}/credit-ledger:
+    get:
+      operationId: getProfileCreditLedger
+      tags: [profiles]
+      summary: List credit transactions for a profile (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Ledger and totals
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileCreditLedger"
+        "404":
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /profiles/{id}/credit-adjust:
+    post:
+      operationId: adjustProfileCredit
+      tags: [profiles]
+      summary: Add or subtract wallet balance (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateCardBody"
+              $ref: "#/components/schemas/AdjustProfileCreditBody"
       responses:
-        "201":
-          description: Card created
+        "200":
+          description: Profile after adjustment
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Card"
+                $ref: "#/components/schemas/Profile"
         "400":
-          description: Validation error
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Profile not found
           content:
             application/json:
               schema:
@@ -301,25 +319,81 @@ paths:
 
   /admin/stats:
     get:
-      operationId: adminGetStats
+      operationId: getAdminStats
       tags: [admin]
-      summary: Admin - dashboard stats
+      summary: Get platform-wide stats for admin dashboard
       responses:
         "200":
-          description: Stats
+          description: Admin stats
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/AdminStats"
-        "403":
-          description: Forbidden
+
+  /admin/recent-taps:
+    get:
+      operationId: getRecentTaps
+      tags: [admin]
+      summary: Get recent tap events across all cards
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Recent tap events
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                type: array
+                items:
+                  $ref: "#/components/schemas/TapWithProfile"
+
+  /admin/expiring-soon:
+    get:
+      operationId: getExpiringSoon
+      tags: [admin]
+      summary: Get profiles expiring within the next 7 days
+      responses:
+        "200":
+          description: Profiles expiring soon
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Profile"
 
 components:
   schemas:
+    PricingItem:
+      type: object
+      description: A service or package row shown on the public profile.
+      required: [name, price, currency]
+      properties:
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        price:
+          type: string
+          description: Display price (e.g. "99.00", "From 120")
+        currency:
+          type: string
+          description: Currency code or symbol (e.g. CAD, USD, $)
+        billingType:
+          type: ["string", "null"]
+          enum: [one-time, hourly, daily, monthly, custom, null]
+        note:
+          type: ["string", "null"]
+        buttonLabel:
+          type: ["string", "null"]
+        linkUrl:
+          type: ["string", "null"]
+          description: Optional CTA URL for this item.
+
     HealthStatus:
       type: object
       properties:
@@ -336,307 +410,416 @@ components:
       required:
         - error
 
-    SuccessResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-      required:
-        - success
-
-    Card:
-      type: object
-      properties:
-        id:
-          type: integer
-        cardCode:
-          type: string
-        status:
-          type: string
-          enum: [new, active]
-        userId:
-          type: ["integer", "null"]
-        createdAt:
-          type: string
-      required:
-        - id
-        - cardCode
-        - status
-        - userId
-        - createdAt
-
-    ActivateCardBody:
-      type: object
-      properties:
-        name:
-          type: string
-        businessName:
-          type: string
-        phone:
-          type: string
-        email:
-          type: string
-        password:
-          type: string
-        username:
-          type: string
-      required:
-        - name
-        - businessName
-        - phone
-        - email
-        - password
-        - username
-
-    LoginBody:
-      type: object
-      properties:
-        email:
-          type: string
-        password:
-          type: string
-      required:
-        - email
-        - password
-
-    AuthResponse:
-      type: object
-      properties:
-        user:
-          $ref: "#/components/schemas/UserWithProfile"
-        token:
-          type: string
-      required:
-        - user
-        - token
-
-    User:
-      type: object
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        businessName:
-          type: string
-        phone:
-          type: string
-        email:
-          type: string
-        username:
-          type: string
-        isAdmin:
-          type: boolean
-        createdAt:
-          type: string
-      required:
-        - id
-        - name
-        - businessName
-        - phone
-        - email
-        - username
-        - isAdmin
-        - createdAt
-
     Profile:
       type: object
+      description: Public NFC profile (camelCase JSON). title maps to jobTitle; bio to shortBio; about to businessDescription.
       properties:
         id:
           type: integer
-        userId:
-          type: integer
-        website:
+        slug:
+          type: string
+        businessName:
+          type: string
+        jobTitle:
           type: ["string", "null"]
+        shortBio:
+          type: ["string", "null"]
+        businessDescription:
+          type: ["string", "null"]
+        category:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        externalContactUrl:
+          type: ["string", "null"]
+          description: General external contact or link URL (not limited to WhatsApp).
         instagram:
           type: ["string", "null"]
-        whatsapp:
+        address:
           type: ["string", "null"]
-        bio:
+        city:
           type: ["string", "null"]
-        logo:
+        orderUrl:
           type: ["string", "null"]
+        bookingUrl:
+          type: ["string", "null"]
+          description: Booking or online profile URL (Calendly, booking page, etc.).
+        customButtonLabel:
+          type: ["string", "null"]
+        leadCaptureEnabled:
+          type: boolean
+        pricingItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/PricingItem"
+        profilePhotoUrl:
+          type: ["string", "null"]
+        logoUrl:
+          type: ["string", "null"]
+        bannerUrl:
+          type: ["string", "null"]
+        resumeUrl:
+          type: ["string", "null"]
+        bannerColor:
+          type: string
+        galleryUrls:
+          type: array
+          items:
+            type: string
+        totalDeliveries:
+          type: integer
+        totalClients:
+          type: integer
+        rating:
+          type: ["number", "null"]
+        isActive:
+          type: boolean
+        isClaimed:
+          type: boolean
+        plan:
+          type: string
+          enum: [basic, pro, business]
+        creditBalance:
+          type: ["string", "number", "null"]
+        creditAwardedAt:
+          type: ["string", "null"]
+        creditExpiresAt:
+          type: ["string", "null"]
+        creditNote:
+          type: ["string", "null"]
+        activationGiftAmount:
+          type: ["string", "number", "null"]
+          description: Preset welcome credit before first activation (admin). Null = default $45 on activation; 0 = no gift.
+        claimedAt:
+          type: ["string", "null"]
+        expiresAt:
+          type: ["string", "null"]
+        ownerEmail:
+          type: ["string", "null"]
+        ownerName:
+          type: ["string", "null"]
+        settingsAccessToken:
+          type: ["string", "null"]
+        settingsAccessExpiresAt:
+          type: ["string", "null"]
+        settingsAccessCreatedAt:
+          type: ["string", "null"]
+        tapCount:
+          type: integer
+        createdAt:
+          type: string
         updatedAt:
           type: string
       required:
         - id
-        - userId
-        - website
-        - instagram
-        - whatsapp
-        - bio
-        - logo
+        - slug
+        - businessName
+        - bannerColor
+        - galleryUrls
+        - pricingItems
+        - totalDeliveries
+        - totalClients
+        - isActive
+        - plan
+        - tapCount
+        - createdAt
         - updatedAt
 
-    UserWithProfile:
+    CreateProfileBody:
       type: object
       properties:
-        id:
-          type: integer
-        name:
+        slug:
           type: string
         businessName:
           type: string
-        phone:
+        jobTitle:
           type: string
-        email:
+        shortBio:
           type: string
-        username:
+        businessDescription:
           type: string
-        isAdmin:
-          type: boolean
-        createdAt:
-          type: string
-        profile:
-          $ref: "#/components/schemas/Profile"
-        credits:
-          $ref: "#/components/schemas/Credits"
-      required:
-        - id
-        - name
-        - businessName
-        - phone
-        - email
-        - username
-        - isAdmin
-        - createdAt
-        - profile
-        - credits
-
-    PublicProfile:
-      type: object
-      properties:
-        name:
-          type: string
-        businessName:
+        category:
           type: string
         phone:
           type: string
-        email:
+        externalContactUrl:
           type: string
-        username:
-          type: string
-        website:
-          type: ["string", "null"]
         instagram:
-          type: ["string", "null"]
-        whatsapp:
-          type: ["string", "null"]
-        bio:
-          type: ["string", "null"]
-        logo:
-          type: ["string", "null"]
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        orderUrl:
+          type: string
+        bookingUrl:
+          type: string
+        customButtonLabel:
+          type: string
+        leadCaptureEnabled:
+          type: boolean
+        profilePhotoUrl:
+          type: string
+        logoUrl:
+          type: string
+        bannerUrl:
+          type: string
+        bannerColor:
+          type: string
+        galleryUrls:
+          type: array
+          items:
+            type: string
+        pricingItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/PricingItem"
+        totalDeliveries:
+          type: integer
+        totalClients:
+          type: integer
+        rating:
+          type: number
+        plan:
+          type: string
+          enum: [basic, pro, business]
+        expiresAt:
+          type: string
+        ownerEmail:
+          type: string
+        ownerName:
+          type: string
+        activationGiftAmount:
+          type: ["string", "number", "null"]
+          description: Optional preset welcome amount before customer activates (null/omit = default on activation).
       required:
-        - name
+        - slug
         - businessName
-        - phone
-        - email
-        - username
-        - website
-        - instagram
-        - whatsapp
-        - bio
-        - logo
-
-    Credits:
-      type: object
-      properties:
-        id:
-          type: integer
-        userId:
-          type: integer
-        total:
-          type: integer
-        used:
-          type: integer
-        available:
-          type: integer
-      required:
-        - id
-        - userId
-        - total
-        - used
-        - available
+        - plan
 
     UpdateProfileBody:
       type: object
       properties:
-        name:
-          type: string
         businessName:
+          type: string
+        jobTitle:
+          type: string
+        shortBio:
+          type: string
+        businessDescription:
+          type: string
+        category:
           type: string
         phone:
           type: string
-        website:
-          type: ["string", "null"]
+        externalContactUrl:
+          type: string
         instagram:
-          type: ["string", "null"]
-        whatsapp:
-          type: ["string", "null"]
-        bio:
-          type: ["string", "null"]
-        logo:
-          type: ["string", "null"]
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        orderUrl:
+          type: string
+        bookingUrl:
+          type: string
+        customButtonLabel:
+          type: string
+        leadCaptureEnabled:
+          type: boolean
+        profilePhotoUrl:
+          type: string
+        logoUrl:
+          type: string
+        bannerUrl:
+          type: string
+        bannerColor:
+          type: string
+        galleryUrls:
+          type: array
+          items:
+            type: string
+        pricingItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/PricingItem"
+        totalDeliveries:
+          type: integer
+        totalClients:
+          type: integer
+        rating:
+          type: number
+        isActive:
+          type: boolean
+        plan:
+          type: string
+          enum: [basic, pro, business]
+        expiresAt:
+          type: string
+        ownerEmail:
+          type: string
+        ownerName:
+          type: string
+        resumeUrl:
+          type: string
+        activationGiftAmount:
+          type: ["string", "number", "null"]
+          description: Only before activation — override default welcome credit (null clears preset; 0 = no welcome credit).
 
-    AdminUser:
+    AdjustProfileCreditBody:
+      type: object
+      required: [amount]
+      properties:
+        amount:
+          type: number
+          description: Positive to add funds, negative to subtract (cannot go below zero).
+        reason:
+          type: string
+        creditExpiresAt:
+          type: ["string", "null"]
+          description: Optional ISO datetime for wallet expiry; null clears override.
+
+    CreditLedgerTransaction:
+      type: object
+      required: [id, profileId, type, amount, balanceAfter, reason, createdAt]
+      properties:
+        id:
+          type: string
+        profileId:
+          type: integer
+        type:
+          type: string
+          enum: [credit, debit]
+        amount:
+          type: string
+        balanceAfter:
+          type: string
+        reason:
+          type: string
+        createdAt:
+          type: string
+
+    ProfileCreditLedger:
+      type: object
+      required: [transactions, totalCredited, totalDebited]
+      properties:
+        transactions:
+          type: array
+          items:
+            $ref: "#/components/schemas/CreditLedgerTransaction"
+        totalCredited:
+          type: string
+        totalDebited:
+          type: string
+
+    TapEvent:
       type: object
       properties:
         id:
           type: integer
-        name:
+        profileId:
+          type: integer
+        tappedAt:
+          type: string
+        userAgent:
+          type: ["string", "null"]
+        country:
+          type: ["string", "null"]
+      required:
+        - id
+        - profileId
+        - tappedAt
+
+    TapWithProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        profileId:
+          type: integer
+        tappedAt:
+          type: string
+        userAgent:
+          type: ["string", "null"]
+        country:
+          type: ["string", "null"]
+        profileSlug:
           type: string
         businessName:
           type: string
-        email:
-          type: string
-        username:
-          type: string
-        phone:
-          type: string
-        isAdmin:
-          type: boolean
-        createdAt:
-          type: string
-        totalCredit:
-          type: integer
-        usedCredit:
-          type: integer
       required:
         - id
-        - name
+        - profileId
+        - tappedAt
+        - profileSlug
         - businessName
-        - email
-        - username
-        - phone
-        - isAdmin
-        - createdAt
-        - totalCredit
-        - usedCredit
+
+    ProfileAnalytics:
+      type: object
+      properties:
+        totalTaps:
+          type: integer
+        tapsByDay:
+          type: array
+          items:
+            $ref: "#/components/schemas/TapsByDay"
+        recentTaps:
+          type: array
+          items:
+            $ref: "#/components/schemas/TapEvent"
+      required:
+        - totalTaps
+        - tapsByDay
+        - recentTaps
+
+    TapsByDay:
+      type: object
+      properties:
+        date:
+          type: string
+        count:
+          type: integer
+      required:
+        - date
+        - count
 
     AdminStats:
       type: object
       properties:
-        totalUsers:
-          type: integer
         totalCards:
           type: integer
         activeCards:
           type: integer
-        newCards:
+        inactiveCards:
           type: integer
-        totalCreditsIssued:
+        totalTaps:
+          type: integer
+        tapsLast30Days:
+          type: integer
+        byPlan:
+          $ref: "#/components/schemas/PlanBreakdown"
+        expiringThisWeek:
           type: integer
       required:
-        - totalUsers
         - totalCards
         - activeCards
-        - newCards
-        - totalCreditsIssued
+        - inactiveCards
+        - totalTaps
+        - tapsLast30Days
+        - byPlan
+        - expiringThisWeek
 
-    CreateCardBody:
+    PlanBreakdown:
       type: object
       properties:
-        cardCode:
-          type: string
+        basic:
+          type: integer
+        pro:
+          type: integer
+        business:
+          type: integer
       required:
-        - cardCode
+        - basic
+        - pro
+        - business

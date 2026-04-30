@@ -10,6 +10,7 @@ out-tsc
 
 # dependencies
 node_modules
+.pnpm-store/
 
 # IDEs and editors
 /.idea
@@ -27,11 +28,6 @@ node_modules
 !.vscode/launch.json
 !.vscode/extensions.json
 
-# env (keep secrets local; use .env.example as template)
-.env
-.env.local
-.env.*.local
-
 # misc
 /.sass-cache
 /connect.lock
@@ -45,6 +41,9 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+# Accidental "Copy" duplicates of generated sources (e.g. `api 2.ts`) — not part of the build graph
+**/*\ 2.ts
 
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md

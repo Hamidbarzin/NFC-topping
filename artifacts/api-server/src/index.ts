@@ -1,25 +1,38 @@
-import app from "./app";
-import { logger } from "./lib/logger";
+import { loadEnv, setAppEnv } from "./config/env";
+import { bootstrapDatabase } from "./bootstrap-db.js";
 
-const rawPort = process.env["PORT"];
+async function main(): Promise<void> {
+  try {
+    const env = loadEnv();
+    process.env.LOG_LEVEL = env.logLevel;
+    setAppEnv(env);
+    const { assertCloudUploadConfigured } = await import("./lib/object-storage.js");
+    assertCloudUploadConfigured();
 
-if (!rawPort) {
-  throw new Error(
-    "PORT environment variable is required but was not provided.",
-  );
-}
+    await bootstrapDatabase();
 
-const port = Number(rawPort);
+    const { default: app } = await import("./app.js");
+    const { logger } = await import("./lib/logger.js");
 
-if (Number.isNaN(port) || port <= 0) {
-  throw new Error(`Invalid PORT value: "${rawPort}"`);
-}
+    const listenPort =
+      Number(process.env.PORT) || env.port || 8080;
 
-app.listen(port, (err) => {
-  if (err) {
-    logger.error({ err }, "Error listening on port");
+    const server = app.listen(listenPort, () => {
+      console.log("Server started on port", listenPort);
+      logger.info(
+        { port: listenPort, nodeEnv: env.nodeEnv },
+        "Server listening",
+      );
+    });
+
+    server.on("error", (err: Error) => {
+      console.error("HTTP server error:", err);
+      process.exit(1);
+    });
+  } catch (err) {
+    console.error("Fatal startup error:", err);
     process.exit(1);
   }
+}
 
-  logger.info({ port }, "Server listening");
-});
+void main();

@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Topping NFC"
+version = "1.0.0"
+id = "artifacts/topping-nfc"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18537
+
+[services.development]
+run = "pnpm --filter @workspace/topping-nfc run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/topping-nfc", "run", "build" ]
+publicDir = "artifacts/topping-nfc/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18537"
+BASE_PATH = "/"
