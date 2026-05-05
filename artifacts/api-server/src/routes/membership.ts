@@ -24,8 +24,15 @@ const sendCodeSchema = z.object({
 
 const verifyCodeSchema = z.object({
   userSlug: z.string().trim().min(2).max(120),
-  code: z.string().trim().regex(/^\d{6}$/),
+  code: z.string().trim().min(4).max(16),
 });
+
+function normalizeDigits(input: string): string {
+  return input
+    .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 1728))
+    .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 1632))
+    .replace(/\D/g, "");
+}
 
 function hashCode(code: string, salt: string): string {
   return createHash("sha256").update(`${salt}:${code}`).digest("hex");
@@ -87,6 +94,11 @@ membershipRouter.post("/membership/verify-code", (req, res) => {
   }
 
   const { userSlug, code } = parsed.data;
+  const normalizedCode = normalizeDigits(code);
+  if (!/^\d{6}$/.test(normalizedCode)) {
+    return res.status(400).json({ error: "Code must be 6 digits." });
+  }
+
   const entry = codes.get(userSlug);
   if (!entry) {
     return res.status(400).json({ error: "Code not found. Please request a new code." });
@@ -103,7 +115,7 @@ membershipRouter.post("/membership/verify-code", (req, res) => {
     return res.status(429).json({ error: "Too many attempts. Please request a new code." });
   }
 
-  const valid = hashCode(code, entry.salt) === entry.codeHash;
+  const valid = hashCode(normalizedCode, entry.salt) === entry.codeHash;
   if (!valid) {
     entry.attempts += 1;
     codes.set(userSlug, entry);

@@ -49,16 +49,28 @@ export default function MembershipVerifyPage() {
 
   const currentMember = member;
 
+  function normalizeDigits(input: string): string {
+    return input
+      .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 1728))
+      .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 1632))
+      .replace(/\D/g, "");
+  }
+
   async function onVerify(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    const normalizedCode = normalizeDigits(inputCode);
+    if (normalizedCode.length !== 6) {
+      setError("Code must be exactly 6 digits.");
+      return;
+    }
     try {
       const response = await fetch("/api/membership/verify-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userSlug,
-          code: inputCode.trim(),
+          code: normalizedCode,
         }),
       });
 
