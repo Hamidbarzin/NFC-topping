@@ -8,6 +8,7 @@ import clientAccessRouter from "./client-access";
 import settingsCardRouter from "./settings-card";
 import uploadRouter from "./upload";
 import leadsRouter from "./leads";
+import membershipRouter from "./membership";
 
 const router: IRouter = Router();
 
@@ -20,6 +21,7 @@ router.use(clientAccessRouter);
 router.use(settingsCardRouter);
 router.use(uploadRouter);
 router.use(leadsRouter);
+router.use(membershipRouter);
 
 router.use((_req, res) => {
   res.status(404).json({ error: "Not found" });

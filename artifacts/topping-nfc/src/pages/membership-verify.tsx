@@ -13,7 +13,6 @@ type MembershipDraft = {
   status: "trial" | "pending_verification" | "active";
   trialEndsAt: string;
   nextBillingAt: string;
-  accessCode: string;
   purchasedAt: string;
 };
 
@@ -50,18 +49,31 @@ export default function MembershipVerifyPage() {
 
   const currentMember = member;
 
-  function onVerify(event: FormEvent<HTMLFormElement>) {
+  async function onVerify(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    try {
+      const response = await fetch("/api/membership/verify-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userSlug,
+          code: inputCode.trim(),
+        }),
+      });
 
-    if (inputCode.trim() !== currentMember.accessCode) {
-      setError("Access code is invalid.");
-      return;
+      if (!response.ok) {
+        const body = (await response.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(body?.error || "Invalid code.");
+      }
+
+      const next: MembershipDraft = { ...currentMember, status: "active" };
+      localStorage.setItem(`membership:${userSlug}`, JSON.stringify(next));
+      setLocation(`/membership/${planKey}/user/${userSlug}`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Invalid code.";
+      setError(message);
     }
-
-    const next: MembershipDraft = { ...currentMember, status: "active" };
-    localStorage.setItem(`membership:${userSlug}`, JSON.stringify(next));
-    setLocation(`/membership/${planKey}/user/${userSlug}`);
   }
 
   return (
@@ -76,9 +88,6 @@ export default function MembershipVerifyPage() {
 
         <section className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-6">
           <p className="text-sm text-gray-300">Code sent to: {currentMember.email}</p>
-          <p className="mt-2 text-xs text-amber-200">
-            Demo mode: your generated code is <span className="font-semibold">{currentMember.accessCode}</span>
-          </p>
           <form className="mt-5 space-y-3" onSubmit={onVerify}>
             <input
               className="h-10 w-full rounded-lg border border-white/20 bg-black/30 px-3 text-sm text-white outline-none placeholder:text-gray-500 focus:border-orange-400"

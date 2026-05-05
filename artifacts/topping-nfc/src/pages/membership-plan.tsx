@@ -41,7 +41,6 @@ type MembershipDraft = {
   status: "trial" | "pending_verification" | "active";
   trialEndsAt: string;
   nextBillingAt: string;
-  accessCode: string;
   purchasedAt: string;
 };
 
@@ -84,7 +83,7 @@ export default function MembershipPlanPage() {
     );
   }
 
-  function onPurchase(event: FormEvent<HTMLFormElement>) {
+  async function onPurchase(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
 
@@ -103,8 +102,6 @@ export default function MembershipPlanPage() {
     const now = new Date();
     const trialEndsAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
     const nextBillingAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
-    const accessCode = String(Math.floor(100000 + Math.random() * 900000));
-
     const payload: MembershipDraft = {
       planKey,
       fullName: fullName.trim(),
@@ -116,12 +113,30 @@ export default function MembershipPlanPage() {
       status: "pending_verification",
       trialEndsAt,
       nextBillingAt,
-      accessCode,
       purchasedAt: now.toISOString(),
     };
 
-    localStorage.setItem(`membership:${userSlug}`, JSON.stringify(payload));
-    setLocation(`/membership/${planKey}/verify/${userSlug}`);
+    try {
+      const response = await fetch("/api/membership/send-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userSlug,
+          phone: phone.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        const body = (await response.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(body?.error || "Failed to send verification SMS.");
+      }
+
+      localStorage.setItem(`membership:${userSlug}`, JSON.stringify(payload));
+      setLocation(`/membership/${planKey}/verify/${userSlug}`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to send verification SMS.";
+      setError(message);
+    }
   }
 
   return (

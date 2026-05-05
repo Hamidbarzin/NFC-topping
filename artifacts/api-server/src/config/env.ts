@@ -13,6 +13,11 @@ export type AppEnv = {
     pass: string | undefined;
     from: string | undefined;
   };
+  twilio: {
+    accountSid: string | undefined;
+    authToken: string | undefined;
+    fromNumber: string | undefined;
+  };
   appBaseUrl: string | undefined;
   logLevel: string;
 };
@@ -72,6 +77,11 @@ export function loadEnv(): AppEnv {
       user: process.env.SMTP_USER?.trim() || undefined,
       pass: process.env.SMTP_PASS?.trim() || undefined,
       from: process.env.SMTP_FROM?.trim() || undefined,
+    },
+    twilio: {
+      accountSid: process.env.TWILIO_ACCOUNT_SID?.trim() || undefined,
+      authToken: process.env.TWILIO_AUTH_TOKEN?.trim() || undefined,
+      fromNumber: process.env.TWILIO_FROM_NUMBER?.trim() || undefined,
     },
     appBaseUrl: process.env.APP_BASE_URL?.replace(/\/$/, "") || undefined,
     logLevel: process.env.LOG_LEVEL ?? "info",
