@@ -9,6 +9,9 @@ import NfcCardEntry from "@/pages/nfc-card";
 import SetupCardPage from "@/pages/setup-card";
 import ClientAccessPage from "@/pages/client-access";
 import CardSettingsPage from "@/pages/card-settings";
+import MembershipPlanPage from "@/pages/membership-plan";
+import MembershipUserPage from "@/pages/membership-user";
+import MembershipVerifyPage from "@/pages/membership-verify";
 import AdminLayout from "@/components/admin-layout";
 import AdminDashboard from "@/pages/admin/dashboard";
 import AdminCards from "@/pages/admin/cards";
@@ -43,6 +46,9 @@ function Router() {
       <Route path="/settings/:cardCode" component={ClientAccessPage} />
       <Route path="/c/:cardCode" component={NfcCardEntry} />
       <Route path="/u/:slug" component={PublicProfile} />
+      <Route path="/membership/:plan/verify/:userSlug" component={MembershipVerifyPage} />
+      <Route path="/membership/:plan/user/:userSlug" component={MembershipUserPage} />
+      <Route path="/membership/:plan" component={MembershipPlanPage} />
       <Route path="/client-access/:accessToken" component={ClientAccessPage} />
       <Route path="/admin/*" component={AdminRoutes} />
       <Route path="/admin" component={AdminRoutes} />

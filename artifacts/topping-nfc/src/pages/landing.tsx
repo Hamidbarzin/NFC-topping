@@ -219,9 +219,9 @@ const features = [
 ];
 
 const plans = [
-  { name: "Starter", price: "$19", subtitle: "Perfect to launch your first digital card." },
-  { name: "Pro", price: "$49", subtitle: "For growing teams that need CRM insights." },
-  { name: "Business", price: "$99", subtitle: "Advanced controls for serious scaling." },
+  { name: "Starter", key: "starter", price: "$19", subtitle: "Perfect to launch your first digital card." },
+  { name: "Pro", key: "pro", price: "$49", subtitle: "For growing teams that need CRM insights." },
+  { name: "Business", key: "business", price: "$99", subtitle: "Advanced controls for serious scaling." },
 ];
 
 export default function Landing() {
@@ -362,8 +362,9 @@ export default function Landing() {
                 <Button
                   variant="outline"
                   className="mt-5 h-10 w-full rounded-xl border-white/20 bg-white/5 text-white transition-colors hover:bg-white/10"
+                  asChild
                 >
-                  Choose {plan.name}
+                  <Link href={`/membership/${plan.key}`}>Choose {plan.name}</Link>
                 </Button>
               </div>
             ))}
